@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "popup-preview",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "popup"],
+      "port": 5174,
+      "autoPort": false
+    }
+  ]
+}

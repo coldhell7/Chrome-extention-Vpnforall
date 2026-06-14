@@ -1,0 +1,6 @@
+dist/
+node_modules/
+*.pem
+.DS_Store
+native-host/vpnforall-host
+native-host/vpnforall-host.exe

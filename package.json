@@ -1,0 +1,6 @@
+{
+  "name": "vpnforall",
+  "version": "0.1.0",
+  "private": true,
+  "description": "VPN for All - Chrome Extension for V2Ray / VLESS / VMess / Trojan proxy"
+}

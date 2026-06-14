@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VPN for All</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 380px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: #0f0f1a;
+      color: #e0e0e0;
+    }
+    .container { padding: 16px; }
+
+    /* Header */
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px; padding-bottom: 12px;
+      border-bottom: 1px solid #1e1e30;
+    }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .logo { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #667eea, #764ba2); }
+    .brand { font-size: 16px; font-weight: 700; color: #fff; }
+    .brand span { color: #667eea; }
+    .status-badge {
+      padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+      background: #1e1e30; color: #888;
+    }
+    .status-badge.connected { background: #1a3a2a; color: #4ade80; }
+    .status-badge.connecting { background: #1a2a3a; color: #60a5fa; }
+
+    /* Tab Navigation */
+    .tabs {
+      display: flex; gap: 0; margin-bottom: 16px;
+      background: #1a1a2e; border-radius: 10px; padding: 3px;
+    }
+    .tab {
+      flex: 1; padding: 8px; text-align: center; cursor: pointer;
+      border-radius: 8px; font-size: 13px; font-weight: 500; color: #666;
+      transition: all 0.2s; border: none; background: transparent;
+    }
+    .tab.active { background: #2a2a4a; color: #fff; }
+    .tab:hover { color: #ccc; }
+
+    /* Sections */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* Config Input */
+    .config-area { margin-bottom: 12px; }
+    .config-area label { font-size: 12px; color: #888; display: block; margin-bottom: 6px; font-weight: 500; }
+    .config-input {
+      width: 100%; min-height: 60px; padding: 10px; border-radius: 8px;
+      border: 1px solid #2a2a4a; background: #1a1a2e; color: #e0e0e0;
+      font-size: 12px; font-family: 'SF Mono', 'Fira Code', monospace;
+      resize: vertical; outline: none; transition: border 0.2s;
+    }
+    .config-input:focus { border-color: #667eea; }
+    .config-input::placeholder { color: #444; }
+
+    /* Buttons */
+    .btn-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    .btn {
+      flex: 1; padding: 10px; border-radius: 8px; border: none; cursor: pointer;
+      font-size: 13px; font-weight: 600; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2); color: #fff;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .btn-danger {
+      background: #dc2626; color: #fff;
+    }
+    .btn-danger:hover { opacity: 0.9; }
+    .btn-secondary {
+      background: #2a2a4a; color: #ccc;
+    }
+    .btn-secondary:hover { background: #3a3a5a; }
+    .btn-connect {
+      background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff;
+    }
+    .btn-disconnect {
+      background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff;
+    }
+
+    /* Profiles List */
+    .profiles-list { max-height: 280px; overflow-y: auto; }
+    .profile-card {
+      background: #1a1a2e; border-radius: 10px; padding: 12px; margin-bottom: 8px;
+      border: 1px solid #2a2a4a; cursor: pointer; transition: all 0.2s;
+    }
+    .profile-card:hover { border-color: #667eea; }
+    .profile-card.active { border-color: #22c55e; background: #1a2a1a; }
+    .profile-card .name { font-weight: 600; color: #fff; margin-bottom: 4px; }
+    .profile-card .server { font-size: 12px; color: #888; }
+    .profile-card .actions {
+      display: flex; gap: 6px; margin-top: 8px;
+    }
+    .profile-card .actions button {
+      padding: 4px 10px; border-radius: 6px; border: none; cursor: pointer;
+      font-size: 11px; font-weight: 500; transition: all 0.2s;
+    }
+    .profile-card .actions .connect-btn { background: #22c55e; color: #fff; }
+    .profile-card .actions .delete-btn { background: #3a1a1a; color: #ef4444; }
+
+    /* Traffic Stats */
+    .traffic-panel {
+      background: #1a1a2e; border-radius: 10px; padding: 16px;
+      border: 1px solid #2a2a4a; margin-top: 12px;
+    }
+    .traffic-panel h3 { font-size: 12px; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+    .traffic-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .traffic-item { text-align: center; flex: 1; }
+    .traffic-item .label { font-size: 11px; color: #666; }
+    .traffic-item .value { font-size: 18px; font-weight: 700; color: #fff; }
+    .traffic-item .value.up { color: #60a5fa; }
+    .traffic-item .value.down { color: #4ade80; }
+    .traffic-item .rate { font-size: 11px; color: #888; }
+
+    /* Config Details */
+    .config-details {
+      background: #1a1a2e; border-radius: 8px; padding: 10px; margin-bottom: 12px;
+      border: 1px solid #2a2a4a;
+    }
+    .config-details .row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+    .config-details .row .label { color: #888; }
+    .config-details .row .value { color: #ccc; }
+
+    /* Info text */
+    .info-text { font-size: 11px; color: #555; text-align: center; margin-top: 8px; }
+
+    /* Parse Error */
+    .error-msg {
+      background: #3a1a1a; border: 1px solid #dc2626; border-radius: 8px;
+      padding: 8px 10px; font-size: 12px; color: #fca5a5; margin-bottom: 8px; display: none;
+    }
+    .error-msg.show { display: block; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center; padding: 30px 20px; color: #555;
+    }
+    .empty-state .icon { font-size: 36px; margin-bottom: 8px; }
+    .empty-state p { font-size: 13px; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 2px; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+      background: #1a3a2a; color: #4ade80; padding: 8px 16px; border-radius: 8px;
+      font-size: 12px; font-weight: 500; border: 1px solid #22c55e;
+      display: none; z-index: 999;
+    }
+    .toast.error { background: #3a1a1a; color: #fca5a5; border-color: #dc2626; }
+    .toast.show { display: block; animation: fadeIn 0.2s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <div class="logo"></div>
+        <div class="brand">VPN<span>4</span>All</div>
+      </div>
+      <div class="status-badge" id="statusBadge">Disconnected</div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="connect">Connect</button>
+      <button class="tab" data-tab="profiles">Profiles</button>
+      <button class="tab" data-tab="stats">Stats</button>
+    </div>
+
+    <!-- Connect Tab -->
+    <div class="section active" id="section-connect">
+      <div class="config-area">
+        <label>Paste V2Ray / VLESS / VMess / Trojan Config Link</label>
+        <textarea class="config-input" id="configInput" placeholder="Paste your config here...
+vless://...
+vmess://...
+trojan://..."></textarea>
+      </div>
+
+      <div class="error-msg" id="errorMsg"></div>
+
+      <div class="config-details" id="configDetails" style="display:none;">
+        <div class="row"><span class="label">Type</span><span class="value" id="detailType">-</span></div>
+        <div class="row"><span class="label">Server</span><span class="value" id="detailServer">-</span></div>
+        <div class="row"><span class="label">Port</span><span class="value" id="detailPort">-</span></div>
+        <div class="row"><span class="label">Name</span><span class="value" id="detailName">-</span></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="addProfileBtn">+ Add to Profiles</button>
+        <button class="btn btn-connect" id="connectBtn">Connect</button>
+      </div>
+
+      <div class="info-text">Paste a vless://, vmess://, or trojan:// link to connect</div>
+    </div>
+
+    <!-- Profiles Tab -->
+    <div class="section" id="section-profiles">
+      <div class="profiles-list" id="profilesList">
+        <div class="empty-state">
+          <div class="icon">📋</div>
+          <p>No saved profiles yet.<br>Paste a config link in the Connect tab and save it.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Tab -->
+    <div class="section" id="section-stats">
+      <div class="traffic-panel">
+        <h3>Traffic Statistics</h3>
+        <div class="traffic-row">
+          <div class="traffic-item">
+            <div class="value up" id="uploadTotal">0 B</div>
+            <div class="rate" id="uploadRate">0 B/s ↑</div>
+            <div class="label">Upload</div>
+          </div>
+          <div class="traffic-item">
+            <div class="value down" id="downloadTotal">0 B</div>
+            <div class="rate" id="downloadRate">0 B/s ↓</div>
+            <div class="label">Download</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="traffic-panel" style="margin-top:8px;">
+        <h3>Connection</h3>
+        <div style="padding:4px 0;">
+          <div class="row" style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;">
+            <span style="color:#888;">Status</span>
+            <span id="connStatus" style="color:#ef4444;">Disconnected</span>
+          </div>
+          <div class="row" style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;">
+            <span style="color:#888;">Connected Since</span>
+            <span id="connSince" style="color:#ccc;">-</span>
+          </div>
+          <div class="row" style="display:flex;justify-content:space-between;font-size:13px;">
+            <span style="color:#888;">Active Profile</span>
+            <span id="activeProfile" style="color:#ccc;">-</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <button class="btn btn-disconnect" id="disconnectBtn">Disconnect</button>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
